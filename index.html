@@ -165,15 +165,15 @@
 	function loop(){
 		ctx.clearRect(0,0,larghezza,altezza);
 		dis_area();
-		if(presB){
-			get_xy(xPosB,yPosB);
-			disegna(xGet, yGet, 1);
-		}
+		
 		for(j=0;j<co2.length;j++){
 			get_xy(co2[j].x, co2[j].y);
 			disegna(xGet, yGet, 2);
 		}
-		
+		if(presB){
+			get_xy(xPosB,yPosB);
+			disegna(xGet, yGet, 1);
+		}
 		
 		get_xy(xPos,yPos);
 		disegna(xGet, yGet, 0);
