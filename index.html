@@ -3,7 +3,7 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Global Graf Game</title>
-	<link rel="shortcut icon" href="icon.PNG">
+	<link rel="shortcut icon" href="icon.png">
 	<style>
 	body{
 		background-color: #3b3939;
@@ -50,28 +50,18 @@
 		z-index: 2;
 		cursor: pointer;
 	}
-	#batt{
+	.parag{
 		background-color: #a14800;
 		position: absolute;
 		top: 40%;
 		left: 50%;
-		font-size: 40px;
+		font-size: 32px;
 		color: white;
 		transform: translate(-50%,-50%);
 		-ms-transform: translate(-50%,-50%);
 		display: none;
 	}
-	#co2{
-		background-color: #a14800;
-		position: absolute;
-		top: 40%;
-		left: 50%;
-		font-size: 40px;
-		color: white;
-		transform: translate(-50%,-50%);
-		-ms-transform: translate(-50%,-50%);
-		display: none;
-	}
+	
 	#cont{
 		position: absolute;
 		top: 65%;
@@ -86,7 +76,7 @@
 	<center>
 		<table id="tab">
 			<tr>
-				<td class="tdc">PUNTEGGIO: </td>	<td id="punti">0</td> <td width="65%"></td>
+				<td class="tdc">PUNTEGGIO: </td>	<td id="punti">0</td> <td width="50%"></td>
 				<td class="tdc">TEMPO: </td>	<td class="tdc" id="tempo">60</td>
 		</table>
 	  	<canvas id="area">
@@ -98,24 +88,29 @@
 			<button onclick="chiudi()" id="start">Start</button>
 		</div>
 		<div id="overlay" onclick="off()";>
-			<p id="batt">Batterie al grafene! <br><br>Le batterie al grafene saranno durevoli, resistenti e molto più efficenti</p>
-			<p id="co2">Anidride Carbonica! <br><br>Le emissioni di anidride carbonica sono la principale causa del surriscaldamento globale</p>
+			<p id="batt" class="parag">Batterie al grafene!<br>+100 punti<br><br>Le batterie al grafene saranno durevoli, resistenti e molto più efficenti</p>
+			<p id="co2" class="parag">Anidride Carbonica!<br>-300 punti<br><br>Le emissioni di anidride carbonica sono la principale causa del surriscaldamento globale</p>
+			<p id="trans" class="parag">Transistor al grafene!<br>+500 punti<br><br>I transistor al grafene possono operare a frequenze anche oltre i 100GHz</p>
+			<p id="acqua" class="parag">Purificatori d'acqua!<br>+200 punti<br><br>L'utilizzo dii filtri al grafene porterà una rivoluzione nelle tecniche di purificazione dell'acqua</p>
+			<p id="fine" class="parag">Fine partita<br><br> Punteggio totalizzato: <span id="PunTot"></span></p>
 			<button id="cont" onclick="off()">Continua</button>
 		</div>
 	</center>
 	<img id="globo" src="globo2.png" height=0>
 	<img id="batteria" src="batteria.png" height=0>
 	<img id="co2imm" src="co2.jpg" height=0>
+	<img id="acquaimm" src="acqua.png" height=0>
+	<img id="transimm" src="transistor.png" height=0>
 	
 <script>
 	const raggio = 6, lato=60; //raggio del nucleo di carbonio, lato dell'esagono
-	var xIn=raggio, y=xIn, x=xIn, xGet=0, yGet=0, xPos=0, yPos=0, xPosB=2, yPosB=3, presB=0, j,jj, punti=0, tempo=60;
+	var xIn=raggio, y=xIn, x=xIn, xGet=0, yGet=0, xPos=0, yPos=0, xPosB=2, yPosB=3, xPosA, yPosA, xPosT,yPosT, presB=0, j,jj, punti=0, tempo=60, presA=0, presT=0, finito=0;
 	var larghezza=0, altezza=0;
 	var c = document.getElementById("area");
 	var ctx = c.getContext("2d");
-	var prima=[1,1];
-	var ids=["globo", "batteria", "co2imm"];
-	var pix=[64, 256, 112]; 
+	var prima=[1,1,1,1];
+	var ids=["globo", "batteria", "co2imm", "acquaimm", "transimm"];
+	var pix=[64, 256, 112, 545, 225]; 
 
 	while(larghezza<window.innerWidth*0.8) larghezza+=lato;
 	larghezza+=2*raggio-lato;
@@ -150,7 +145,7 @@
 		}
 	});
 	
-	var time_spawnB, time_spawnCo2, time_loop, time_tempo;
+	var time_spawnB, time_spawnCo2, time_spawnA, time_spwanT, time_loop, time_tempo;
 	var co2 = new Array();
 	var modal = document.getElementById("myModal");
 	var area = document.getElementById("area");
@@ -163,17 +158,25 @@
 	tab.style.display = "none";
 	
 	function loop(){
+		console.log("loop");
 		ctx.clearRect(0,0,larghezza,altezza);
 		dis_area();
-		
 		for(j=0;j<co2.length;j++){
 			get_xy(co2[j].x, co2[j].y);
 			disegna(xGet, yGet, 2);
-		}
+		}		
 		if(presB){
 			get_xy(xPosB,yPosB);
 			disegna(xGet, yGet, 1);
 		}
+		if(presA){
+			get_xy(xPosA,yPosA);
+			disegna(xGet, yGet, 3);
+		}
+		if(presT){
+			get_xy(xPosT,yPosT);
+			disegna(xGet, yGet, 4);
+		}		
 		
 		get_xy(xPos,yPos);
 		disegna(xGet, yGet, 0);
@@ -188,6 +191,32 @@
 				prima[0]=0;
 				document.getElementById("overlay").style.display = "block";
 				document.getElementById("batt").style.display = "block";
+			}
+				
+		}
+		if(xPos==xPosA && yPos==yPosA){
+			xPosA = -1;
+			presA=0;
+			time_spawnA = setTimeout(spawnA, Math.floor(Math.random() * 3000) + 2000);
+			punti+=200;
+			document.getElementById("punti").innerHTML = punti;
+			if(prima[2]){
+				prima[2]=0;
+				document.getElementById("overlay").style.display = "block";
+				document.getElementById("acqua").style.display = "block";
+			}
+				
+		}
+		if(xPos==xPosT && yPos==yPosT){
+			xPosT = -1;
+			presT=0;
+			time_spawnT = setTimeout(spawnT, Math.floor(Math.random() * 3000) + 3000);
+			punti+=500;
+			document.getElementById("punti").innerHTML = punti;
+			if(prima[3]){
+				prima[3]=0;
+				document.getElementById("overlay").style.display = "block";
+				document.getElementById("trans").style.display = "block";
 			}
 				
 		}
@@ -290,13 +319,40 @@
 	}
 	
 	function spawnB(){
-		var bool1 = 1;
+		var bool1 = 0;
 		do{
+			bool1 = 0;
 			xPosB = Math.floor(Math.random() * (xPosMax+1));
 			yPosB = Math.floor(Math.random() * (yPosMax+1));
 			presB = 1;
-			for(jj=0;jj<co2.length;jj++) if(xPosB==co2[jj].x && yPosB==co2[jj].y) bool1=0;
-		}while(((xPosB==xPos && yPos==yPosB)||(xPosB%2 && yPosB==0))&&bool1)
+			for(jj=0;jj<co2.length;jj++) if(xPosB==co2[jj].x && yPosB==co2[jj].y) bool1=1;
+			if((xPosB==xPosT)&&(yPosB==yPosT)) bool1=1;
+			if((xPosB==xPosA)&&(yPosB==yPosA)) bool1=1;
+		}while(((xPosB==xPos && yPos==yPosB)||(xPosB%2 && yPosB==0))||bool1)
+	}
+	
+	function spawnA(){
+		var bool2 = 0;
+		do{
+			bool2 = 0;
+			xPosA = Math.floor(Math.random() * (xPosMax+1));
+			yPosA = Math.floor(Math.random() * (yPosMax+1));
+			presA = 1;
+			for(jo=0;jo<co2.length;jo++) if(xPosA==co2[jo].x && yPosA==co2[jo].y) bool2=1;
+			if((xPosA==xPosT)&&(yPosA==yPosT)) bool2=1;
+		}while(((xPosA==xPos && yPos==yPosA)||(xPosA%2 && yPosA==0))||bool2)
+	}
+	
+	function spawnT(){
+		var bool3 = 0;
+		do{
+			bool3 = 0;
+			xPosT = Math.floor(Math.random() * (xPosMax+1));
+			yPosT = Math.floor(Math.random() * (yPosMax+1));
+			presT = 1;
+			for(jj=0;jj<co2.length;jj++) if(xPosT==co2[jj].x && yPosT==co2[jj].y) bool3=1;
+			if((xPosA==xPosT)&&(yPosA==yPosT)) bool3=1;
+		}while(((xPosT==xPos && yPos==yPosT)||(xPosT%2 && yPosT==0))||bool3)
 	}
 	
 	function spawnCo2(){
@@ -318,25 +374,38 @@
 		area.style.display = "block";
 		tab.style.display = "inline";
 		time_loop = setInterval(loop,20);
-		time_spawnB = setTimeout(spawnB, 3000);
-		time_spawnCo2 = setInterval(spawnCo2, 4000);
+		time_spawnB = setTimeout(spawnB, 2000);
+		time_spawnA = setTimeout(spawnA, 5000);
+		time_spawnCo2 = setInterval(spawnCo2, 3000);
+		time_spawnT = setTimeout(spawnT, 6000);
 		time_tempo = setInterval(cala, 1000);
 	}
 	
 	function off(){
-		document.getElementById("overlay").style.display = "none";
-		document.getElementById("batt").style.display = "none";
-		document.getElementById("co2").style.display = "none";
+		if(!finito){
+			document.getElementById("overlay").style.display = "none";
+			document.getElementById("batt").style.display = "none";
+			document.getElementById("co2").style.display = "none";
+			document.getElementById("acqua").style.display = "none";
+			document.getElementById("trans").style.display = "none";
+		}
 	}
 	
 	function cala(){
 		tempo--;
 		document.getElementById("tempo").innerHTML = tempo;
 		if(tempo==0){
-			alert("Fine partita!\nPunteggio: "+ punti);
 			clearInterval(time_loop);
 			clearInterval(time_spawnB);
+			clearInterval(time_spawnA);
+			clearInterval(time_spawnT);
+			clearInterval(time_spawnCo2);
 			clearInterval(time_tempo);
+			document.getElementById("PunTot").innerHTML = punti;
+			document.getElementById("overlay").style.display = "block";
+			document.getElementById("fine").style.display = "block";
+			document.getElementById("cont").style.display = "none";
+			finito = 1;
 		}
 			
 	}
