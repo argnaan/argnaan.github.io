@@ -2,6 +2,8 @@
 <html>
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Global Graf Game</title>
+	<link rel="shortcut icon" href="icon.png">
 	<style>
 	body{
 		background-color: #3b3939;
@@ -16,10 +18,7 @@
 		font-size: 20px;
 		margin-top: 20px;
 	}
-	.tdc{
-		width: 100px;
-		text-align:center;
-	}
+	
 	.modal{
 		display:none;
 		background-color: #ff7300;
@@ -33,7 +32,7 @@
 		text-align: center;
 		padding: 30px;
 	}
-	button{
+	#start{
 		margin-top: 20px;
 		font-size: 28px;
 		border-radius: 10px;
@@ -51,7 +50,7 @@
 		z-index: 2;
 		cursor: pointer;
 	}
-	.batt{
+	#batt{
 		background-color: #a14800;
 		position: absolute;
 		top: 40%;
@@ -60,16 +59,35 @@
 		color: white;
 		transform: translate(-50%,-50%);
 		-ms-transform: translate(-50%,-50%);
+		display: none;
 	}
+	#co2{
+		background-color: #a14800;
+		position: absolute;
+		top: 40%;
+		left: 50%;
+		font-size: 40px;
+		color: white;
+		transform: translate(-50%,-50%);
+		-ms-transform: translate(-50%,-50%);
+		display: none;
+	}
+	#cont{
+		position: absolute;
+		top: 65%;
+		left: 45%;
+		font-size: 28px;
+		border-radius: 10px;
+	}	
 	</style>
 </head>
 
-<body onload="setInterval(loop,20)">
+<body>
 	<center>
 		<table id="tab">
 			<tr>
-				<td class="tdc">PUNTEGGIO: </td>	<td id="punti" class="tdc">0</td> <td></td>
-				<td class="tdc">TEMPO: </td>	<td class="tdc">60</td>
+				<td class="tdc">PUNTEGGIO: </td>	<td id="punti">0</td> <td width="65%"></td>
+				<td class="tdc">TEMPO: </td>	<td class="tdc" id="tempo">60</td>
 		</table>
 	  	<canvas id="area">
 			Spiacenti gioco incompatibile con il browser.
@@ -77,23 +95,26 @@
 		<div class="modal" id="myModal">
 			<h1 class="iniz">Global Graph Game!</h1>
 			<p class="iniz">Muoviti nel grafene premendo le quattro frecce e accumula il massimo di punti in un minuto</p>
-			<button onclick="chiudi()">Continua</button>
+			<button onclick="chiudi()" id="start">Start</button>
 		</div>
 		<div id="overlay" onclick="off()";>
-			<p class="batt">Batterie al grafene! <br><br>Le batterie al grafene saranno durevoli, resistenti e molto più efficenti</p>
+			<p id="batt">Batterie al grafene! <br><br>Le batterie al grafene saranno durevoli, resistenti e molto più efficenti</p>
+			<p id="co2">Anidride Carbonica! <br><br>Le emissioni di anidride carbonica sono la principale causa del surriscaldamento globale</p>
+			<button id="cont" onclick="off()">Continua</button>
 		</div>
 	</center>
 	<img id="globo" src="globo2.png" height=0>
 	<img id="batteria" src="batteria.png" height=0>
-	<img id="co2" src="co2.jpg" height=0>
+	<img id="co2imm" src="co2.jpg" height=0>
 	
 <script>
 	const raggio = 6, lato=60; //raggio del nucleo di carbonio, lato dell'esagono
-	var xIn=raggio, y=xIn, x=xIn, xGet=0, yGet=0, xPos=0, yPos=0, xPosB=2, yPosB=3, presB=0, j,jj, punti=0, primaB=1;
+	var xIn=raggio, y=xIn, x=xIn, xGet=0, yGet=0, xPos=0, yPos=0, xPosB=2, yPosB=3, presB=0, j,jj, punti=0, tempo=60;
 	var larghezza=0, altezza=0;
 	var c = document.getElementById("area");
 	var ctx = c.getContext("2d");
-	var id=["globo", "batteria", "co2"];
+	var prima=[1,1];
+	var ids=["globo", "batteria", "co2imm"];
 	var pix=[64, 256, 112]; 
 
 	while(larghezza<window.innerWidth*0.8) larghezza+=lato;
@@ -122,8 +143,7 @@
 		}
 	});
 	
-	var time_spawnB = setTimeout(spawnB, 3000);
-	var time_spawnCo2 = setInterval(spawnCo2, 4000);
+	var time_spawnB, time_spawnCo2, time_loop, time_tempo;
 	var co2 = new Array();
 	var modal = document.getElementById("myModal");
 	var area = document.getElementById("area");
@@ -157,9 +177,10 @@
 			time_spawnB = setTimeout(spawnB, Math.floor(Math.random() * 3000) + 1000);
 			punti+=100;
 			document.getElementById("punti").innerHTML = punti;
-			if(primaB){
-				primaB=0;
+			if(prima[0]){
+				prima[0]=0;
 				document.getElementById("overlay").style.display = "block";
+				document.getElementById("batt").style.display = "block";
 			}
 				
 		}
@@ -169,6 +190,11 @@
 				punti-=300;
 				if(punti<0) punti=0;
 				document.getElementById("punti").innerHTML = punti;
+				if(prima[1]){
+				prima[1]=0;
+				document.getElementById("overlay").style.display = "block";
+				document.getElementById("co2").style.display = "block";
+			}
 			}
 		}
 	}
@@ -252,7 +278,7 @@
 	
 	
 	function disegna(xImm, yImm, sel){
-		image = document.getElementById(id[sel]);
+		image = document.getElementById(ids[sel]);
 		ctx.drawImage(image, 0, 0, pix[sel], pix[sel], xImm, yImm, 64, 64);
 	}
 	
@@ -262,7 +288,7 @@
 			xPosB = Math.floor(Math.random() * (xPosMax+1));
 			yPosB = Math.floor(Math.random() * (yPosMax+1));
 			presB = 1;
-			for(jj=0;jj<co2.length;jj++) if(xPosB==co2[i].x && yPosB==co2[i].y) bool1=0;
+			for(jj=0;jj<co2.length;jj++) if(xPosB==co2[jj].x && yPosB==co2[jj].y) bool1=0;
 		}while(((xPosB==xPos && yPos==yPosB)||(xPosB%2 && yPosB==0))&&bool1)
 	}
 	
@@ -283,12 +309,31 @@
 	function chiudi(){
 		modal.style.display = "none";
 		area.style.display = "block";
-		tab.style.display = "block";
+		tab.style.display = "inline";
+		time_loop = setInterval(loop,20);
+		time_spawnB = setTimeout(spawnB, 3000);
+		time_spawnCo2 = setInterval(spawnCo2, 4000);
+		time_tempo = setInterval(cala, 1000);
 	}
 	
 	function off(){
 		document.getElementById("overlay").style.display = "none";
+		document.getElementById("batt").style.display = "none";
+		document.getElementById("co2").style.display = "none";
 	}
+	
+	function cala(){
+		tempo--;
+		document.getElementById("tempo").innerHTML = tempo;
+		if(tempo==0){
+			alert("Fine partita!\nPunteggio: "+ punti);
+			clearInterval(time_loop);
+			clearInterval(time_spawnB);
+			clearInterval(time_tempo);
+		}
+			
+	}
+		
 </script>
 
 </body>
