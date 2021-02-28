@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+	body{
+		background-color: #3b3939;
+	}
+	#area{
+		background-color: gray;
+		margin-top: 20px;
+		border: 1px solid #000000;
+	}
+	table{
+		color: white;
+		font-size: 20px;
+		margin-top: 20px;
+	}
+	.tdc{
+		width: 100px;
+		text-align:center;
+	}
+	.modal{
+		display:none;
+		background-color: #ff7300;
+		color: white;
+		width: 500px;
+		height: 300px;
+		margin: 50px;
+	}
+	p{
+		font-size: 24px;
+		text-align: center;
+		padding: 30px;
+	}
+	button{
+		margin-top: 20px;
+		font-size: 28px;
+		border-radius: 10px;
+	}
+	#overlay{
+		position: fixed;
+		display: none;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: rgba(0,0,0,0.5);
+		z-index: 2;
+		cursor: pointer;
+	}
+	.batt{
+		background-color: #a14800;
+		position: absolute;
+		top: 40%;
+		left: 50%;
+		font-size: 40px;
+		color: white;
+		transform: translate(-50%,-50%);
+		-ms-transform: translate(-50%,-50%);
+	}
+	</style>
+</head>
+
+<body onload="setInterval(loop,20)">
+	<center>
+		<table id="tab">
+			<tr>
+				<td class="tdc">PUNTEGGIO: </td>	<td id="punti" class="tdc">0</td> <td></td>
+				<td class="tdc">TEMPO: </td>	<td class="tdc">60</td>
+		</table>
+	  	<canvas id="area">
+			Spiacenti gioco incompatibile con il browser.
+		</canvas>
+		<div class="modal" id="myModal">
+			<h1 class="iniz">Global Graph Game!</h1>
+			<p class="iniz">Muoviti nel grafene premendo le quattro frecce e accumula il massimo di punti in un minuto</p>
+			<button onclick="chiudi()">Continua</button>
+		</div>
+		<div id="overlay" onclick="off()";>
+			<p class="batt">Batterie al grafene! <br><br>Le batterie al grafene saranno durevoli, resistenti e molto più efficenti</p>
+		</div>
+	</center>
+	<img id="globo" src="globo2.png" height=0>
+	<img id="batteria" src="batteria.png" height=0>
+	<img id="co2" src="co2.jpg" height=0>
+	
+<script>
+	const raggio = 6, lato=60; //raggio del nucleo di carbonio, lato dell'esagono
+	var xIn=raggio, y=xIn, x=xIn, xGet=0, yGet=0, xPos=0, yPos=0, xPosB=2, yPosB=3, presB=0, j,jj, punti=0, primaB=1;
+	var larghezza=0, altezza=0;
+	var c = document.getElementById("area");
+	var ctx = c.getContext("2d");
+	var id=["globo", "batteria", "co2"];
+	var pix=[64, 256, 112]; 
+
+	while(larghezza<window.innerWidth*0.8) larghezza+=lato;
+	larghezza+=2*raggio-lato;
+	while(altezza<window.innerHeight*0.8) altezza+=(lato*0.866);
+	altezza+=2*raggio-(lato*0.866);
+	
+	ctx.fillStyle = "black";
+	var xPosMax = larghezza/(lato*3/2)-2;
+	var yPosMax = altezza/(lato*0.866*2)-2;
+	xPos = (xPosMax-(xPosMax%2))/2 + 1;
+	yPos = (yPosMax-(yPosMax%2))/2 + 1;
+	
+	document.addEventListener('keydown', function(event) {
+		if(event.keyCode == 37) { //left
+			if(xPos>0) xPos--;
+		}
+		else if(event.keyCode == 39) { //right
+			if(xPos<xPosMax) xPos++;
+		}
+		else if(event.keyCode == 38) { //su
+			if(yPos>0) yPos--;
+		}
+		else if(event.keyCode == 40) { //giu
+			if(yPos<yPosMax) yPos++;
+		}
+	});
+	
+	var time_spawnB = setTimeout(spawnB, 3000);
+	var time_spawnCo2 = setInterval(spawnCo2, 4000);
+	var co2 = new Array();
+	var modal = document.getElementById("myModal");
+	var area = document.getElementById("area");
+	var tab = document.getElementById("tab");
+	area.setAttribute("width",larghezza);
+	area.setAttribute("height",altezza);
+	tab.setAttribute("width",larghezza);
+	modal.style.display = "block";
+	area.style.display = "none";
+	tab.style.display = "none";
+	
+	function loop(){
+		ctx.clearRect(0,0,larghezza,altezza);
+		dis_area();
+		if(presB){
+			get_xy(xPosB,yPosB);
+			disegna(xGet, yGet, 1);
+		}
+		for(j=0;j<co2.length;j++){
+			get_xy(co2[j].x, co2[j].y);
+			disegna(xGet, yGet, 2);
+		}
+		
+		
+		get_xy(xPos,yPos);
+		disegna(xGet, yGet, 0);
+		
+		if(xPos==xPosB && yPos==yPosB){
+			xPosB = -1;
+			presB=0;
+			time_spawnB = setTimeout(spawnB, Math.floor(Math.random() * 3000) + 1000);
+			punti+=100;
+			document.getElementById("punti").innerHTML = punti;
+			if(primaB){
+				primaB=0;
+				document.getElementById("overlay").style.display = "block";
+			}
+				
+		}
+		for(j=0;j<co2.length;j++){
+			if(xPos==co2[j].x && yPos==co2[j].y){
+				co2.splice(j,1);
+				punti-=300;
+				if(punti<0) punti=0;
+				document.getElementById("punti").innerHTML = punti;
+			}
+		}
+	}
+	
+	function dis_area(){
+		xIn=raggio;
+		x=xIn;
+		y=xIn;
+		var i=0, m=0;
+		while(y<altezza){
+			while(x<larghezza){
+				ctx.beginPath();
+				ctx.arc(x, y, raggio, 0, 2 * Math.PI);
+				ctx.fill();
+				ctx.stroke();
+				x+= lato+(lato*(m%2));
+				m++;
+			}
+			y+=(lato*0.866);
+			if(i%2) x = xIn;
+			else x = xIn + lato*3/2;
+			i++;
+			m=0;
+		}
+	
+		var x1 = xIn + raggio, x2, y1 = xIn, y2;
+		i=0;
+		while(y1 < altezza){
+			while(x1 < larghezza){
+				x2 = x1 + lato - raggio*2;
+				y2 = y1;
+				ctx.moveTo(x1, y1);
+				ctx.lineTo(x2, y2);
+				ctx.stroke();
+				x1 = x1 + 3*lato;
+			}
+			x1 = xIn + raggio + ((i+1)%2)*lato*3/2;
+			y1 = y1+=(lato*0.866);
+			i++;
+		}
+		i=0;
+		m=0;
+		x1 = xIn - raggio/2;
+		y1 = xIn + raggio*0.886;
+		while(y1 < altezza){
+			while(x1 < larghezza){
+				if(m%2)	x2 = x1 + lato/2 - raggio;
+				else x2 = x1 - lato/2 + raggio;
+				y2 = y1 + 0.886*(lato - raggio*2); 
+				ctx.moveTo(x1, y1);
+				ctx.lineTo(x2, y2);
+				ctx.stroke();
+				if(m%2) x1 += 2*lato - raggio;
+				else x1+= lato + raggio;
+				m++;
+			}
+			x1 = xIn - raggio + ((i+1)%2)*lato*3/2;
+			y1 = y1+=(lato*0.866);
+			i++;
+			m=0;
+		}
+	}
+	
+	
+	function get_xy(xIni, yIni){
+		xGet = lato/2+raggio;
+		yGet = 0;
+		if(xIni%2) yGet+= raggio;
+		else yGet+=lato*0.866 + raggio;
+		while(xIni>0){
+			xGet+=lato*3/2;
+			xIni--;
+		}
+		while(yIni>0){
+			yGet+=lato*2*0.866;
+			yIni--;
+		}
+		xGet-=32;
+		yGet-=32;
+	}
+	
+	
+	function disegna(xImm, yImm, sel){
+		image = document.getElementById(id[sel]);
+		ctx.drawImage(image, 0, 0, pix[sel], pix[sel], xImm, yImm, 64, 64);
+	}
+	
+	function spawnB(){
+		var bool1 = 1;
+		do{
+			xPosB = Math.floor(Math.random() * (xPosMax+1));
+			yPosB = Math.floor(Math.random() * (yPosMax+1));
+			presB = 1;
+			for(jj=0;jj<co2.length;jj++) if(xPosB==co2[i].x && yPosB==co2[i].y) bool1=0;
+		}while(((xPosB==xPos && yPos==yPosB)||(xPosB%2 && yPosB==0))&&bool1)
+	}
+	
+	function spawnCo2(){
+		var xPosCo2, yPosCo2;
+		do{
+			xPosCo2 = Math.floor(Math.random() * (xPosMax+1));
+			yPosCo2 = Math.floor(Math.random() * (yPosMax+1));
+		}while((xPosCo2==xPos && yPos==yPosCo2)||(xPosCo2%2 && yPosCo2==0) || (presB && xPosCo2==xPosB && yPosB==yPosCo2));
+		co2.push(new crea_co2(xPosCo2, yPosCo2));
+	}
+	
+	function crea_co2(x_co2, y_co2){
+		this.x = x_co2;
+		this.y = y_co2;
+	}
+	
+	function chiudi(){
+		modal.style.display = "none";
+		area.style.display = "block";
+		tab.style.display = "block";
+	}
+	
+	function off(){
+		document.getElementById("overlay").style.display = "none";
+	}
+</script>
+
+</body>
+</html>
